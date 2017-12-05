@@ -28,54 +28,30 @@ class CartResource{
         return res
     }
 
-    /*@GET
+    @GET
     @Path("read")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_HTML)
+    @Produces(MediaType.APPLICATION_JSON)
             //example of using session get
     fun  readCart(@CookieParam("JwtToken") cookie: String, @QueryParam("date") date : String): Response {
         //returns a json array of items
         val claims = checkToken(cookie)
         claims.get("subject", String::class.java)
-        //first get tempSecret
-        val temp = Unirest.get("http://srvjavausers:8081/rest/services/getServiceToken")
-                .queryString("name", "sample")
-                .asJson()
-        val encrypted = temp.body.getObject().getString("tempSecret")
-        var privateKey = (this::class.java.classLoader).getResource("pki/private.key")
-                .readText()
-                .toByteArray()
-        privateKey = Base64.getDecoder().decode(privateKey)
-        val cipher2 = Cipher.getInstance("RSA")
-        cipher2.init(Cipher.PRIVATE_KEY, RSAPrivateCrtKeyImpl.newKey(privateKey))
-        val ret = cipher2.doFinal(DatatypeConverter.parseBase64Binary(encrypted))
-        //first get jwt
-        val jwtResponse = Unirest.get("http://srvjavausers:8081/rest/services/getServiceToken")
-                .queryString("name", "sample")
-                .queryString("tempSecret", ret)
-                .asJson()
-        val jwt = jwtResponse.body.getObject().getString("BearerToken")
         val cartResponse = Unirest.get("http://srvjavausers:8081/rest/session/get")
-                .header("Authorization", "bearer " + jwt)
-                .queryString("key", "shopping.user." + date)
-                .asJson()
+                .header("Authorization", "bearer "  + "eyJhbGciOiJSUzUxMiJ9.eyJzdWIiOiJ0ZXN0IiwiVG9rZW5UeX" +
+                        "BlIjoic2VydmljZSIsIlBlcm1pc3Npb25zIjpbInNlc3Npb246bW9kaWZ5Iiwic2Vzc2lvbjpyZWFkIl0sI" +
+                        "lJvbGVzIjpbInNlc3Npb25PcGVyYXRvciJdfQ.mRjvZxYYZnqzVcevHBIvOkz5izN6Y-SdCW7Bsn_67hQs" +
+                        "lpD6T3x2GGarcGO0ZPHLAVSE6CeFS4WfCVLW2H5uuq3GMKkiwzuFqaXvMUDMdaDeq797DfaTIVMTEUTq7H9" +
+                        "xWKBXSK2Ft9FXbfAvL4HGy0iCSeynPHBUoGe3zcigjxVMX6WptBAlB7wLJuonMbgTo6ALy3odFd1ueU9Z" +
+                        "_1qhG429c1wJsLY8frTNKwXNDkzOcHsW11bnJiZlqD4JrnJWT4YWIq10WZgHk4NXVxO3rO-Ew9HCygFF9" +
+                        "nvwsy1C7d4rR6V9roj1NJjQDTtRwA-MECx1l_S7u0kd7j1gWjV1tQ")
+                .queryString("key", date)
+                .queryString("id", "node0cih2cve5n4co12vvvb10c383h0")
+                .asString()
 
-        val arr = cartResponse.body.getArray()
-        return Response.ok().entity("<html>\n" +
-                "  <head>\n" +
-                "  </head>\n" +
-                "  <body>\n" +
-                "    <p>\n" +
-                "      Well, hello there!\n" +
-                "    </p>\n" +
-                "    <p>\n" +
-                "      Here are the items in your cart" +
-                arr +
-                "    </p>\n" +
-                "  </body>\n" +
-                "  </head>\n" +
-                "  </html>\n").build()
-    }*/
+        val arr = cartResponse.rawBody
+        return Response.ok().entity(arr).build()
+    }
 
     @POST
     @Path("add")
@@ -86,11 +62,17 @@ class CartResource{
         val mapper = ObjectMapper()
 
         val cartResponse= Unirest.post("http://srvjavausers:8081/rest/session/set/")
-                     .queryString("key", "a")
-                .queryString("id", "node016nwsi9xkhztj1sm70gw8lmy4g1" )
+                .queryString("key", date)
+                .queryString("id", "node0cih2cve5n4co12vvvb10c383h0")
                 .header("Content-Type", "application/json")
-                     .header("authorization", "bearer " +  "eyJhbGciOiJSUzUxMiJ9.eyJzdWIiOiJzYW1wbGUiLCJUb2tlblR5cGUiOiJzZXJ2aWNlIiwiUGVybWlzc2lvbnMiOlsic2Vzc2lvbjptb2RpZnkiLCJzZXNzaW9uOnJlYWQiXSwiUm9sZXMiOlsic2Vzc2lvbk9wZXJhdG9yIl19.J2COZvbU5vhD-AvURnowL0qUglvyMKqo41jlr0M8utET59bja9dofIzSIiwQslStB8vShSCkoNzjzPCIkwtT2-_3IiuHVxxFAy69kc55fvcNmM8yasKsD4n2vJnM22E7ltyHyunAGVo5nKJVN8dtORswEdifgwgxNqX14ZxPhWjZGpkz_4QoiHFHYe_4MjyiTkib2rmi2dgn3TycuCKKo_2z6pb-lrlHk1Us7bs3uuowhhG16iujPVOwlhsTqwc_AZDy8mhyywD0q868g6MMjCUIM_I7Gsq1RvzSKNu_RNchJDXLPLaxkBWeJV84YPvoCMNoJunHNYXyY1gkQT6azg")
-                     .body(mapper.writeValueAsString(mapper.readTree(body)))
+                .header("authorization", "bearer " + "eyJhbGciOiJSUzUxMiJ9.eyJzdWIiOiJ0ZXN0IiwiVG9rZW5UeX" +
+                        "BlIjoic2VydmljZSIsIlBlcm1pc3Npb25zIjpbInNlc3Npb246bW9kaWZ5Iiwic2Vzc2lvbjpyZWFkIl0sI" +
+                        "lJvbGVzIjpbInNlc3Npb25PcGVyYXRvciJdfQ.mRjvZxYYZnqzVcevHBIvOkz5izN6Y-SdCW7Bsn_67hQs" +
+                        "lpD6T3x2GGarcGO0ZPHLAVSE6CeFS4WfCVLW2H5uuq3GMKkiwzuFqaXvMUDMdaDeq797DfaTIVMTEUTq7H9" +
+                        "xWKBXSK2Ft9FXbfAvL4HGy0iCSeynPHBUoGe3zcigjxVMX6WptBAlB7wLJuonMbgTo6ALy3odFd1ueU9Z" +
+                        "_1qhG429c1wJsLY8frTNKwXNDkzOcHsW11bnJiZlqD4JrnJWT4YWIq10WZgHk4NXVxO3rO-Ew9HCygFF9" +
+                                "nvwsy1C7d4rR6V9roj1NJjQDTtRwA-MECx1l_S7u0kd7j1gWjV1tQ")
+                .body(mapper.writeValueAsString(mapper.readTree(body)))
                 .asString()
         val obj = cartResponse.rawBody
 
